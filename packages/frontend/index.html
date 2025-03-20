@@ -1,0 +1,106 @@
+<html lang="en">
+<head>
+    <title>JS keycloak example</title>
+    <style>
+        #output, #events {
+            background-color: #ddd;
+            border: 1px solid #ccc;
+            padding: 10px;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+
+<div>
+    <div id="no-auth" style="display: block;">
+        <button onclick="login()">Login</button>
+    </div>
+    <div id="auth" style="display: none;">
+        <button onclick="callPrivateRoute()">Call private route</button>
+        <button onclick="logout()">Logout</button>
+    </div>
+</div>
+
+<h2>Result</h2>
+<pre id="output"></pre>
+
+<h2>Events</h2>
+<pre id="events"></pre>
+
+<script>
+    const backendUrl = 'http://localhost:3000';
+
+    fetch(`${backendUrl}/check-auth`, {
+        method: 'GET',
+        credentials: 'include'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.authenticated) {
+            updateUI(true);
+            event('User is already authenticated');
+        } else {
+            updateUI(false);
+            event('User is not authenticated');
+        }
+    })
+    .catch(function(error) {
+        event('Failed to check authentication status: ' + error);
+        updateUI(false);
+    });
+
+    function updateUI(authenticated) {
+        if (authenticated) {
+            document.getElementById('no-auth').style.display = 'none';
+            document.getElementById('auth').style.display = 'block';
+        } else {
+            document.getElementById('no-auth').style.display = 'block';
+            document.getElementById('auth').style.display = 'none';
+        }
+    }
+
+    function login() {
+        window.location.href = `${backendUrl}/login`;
+    }
+
+    function logout() {
+        window.location.href = `${backendUrl}/logout`;
+    }
+
+    function callPrivateRoute() {
+        fetch(`${backendUrl}/private-route`, {
+            method: 'GET',
+            credentials: 'include'
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Status: ' + response.status + ' - You may not be authenticated');
+                }
+                return response.text();
+            })
+            .then(data => {
+                output(data);
+                event('Private route called successfully');
+            })
+            .catch(error => {
+                output('Error calling private route');
+                event('Error calling private route: ' + error);
+            });
+    }
+
+    function output(data) {
+        if (typeof data === 'object') {
+            data = JSON.stringify(data, null, '  ');
+        }
+        document.getElementById('output').innerHTML = data;
+    }
+
+    function event(event) {
+        const e = document.getElementById('events').innerHTML;
+        document.getElementById('events').innerHTML = new Date().toLocaleString() + "\t" + event + "\n" + e;
+    }
+</script>
+</body>
+</html>
