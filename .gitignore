@@ -1,0 +1,21 @@
+# Docker volumes
+keycloak_data/
+
+# Environment files
+.env
+
+# IDE files
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+
+# Logs
+*.log
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+node_modules
